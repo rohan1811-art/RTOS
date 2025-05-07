@@ -1,0 +1,36 @@
+#include &quot;config.h&quot;
+#include &quot;stdlib.h&quot;
+#include &quot;serial.h&quot;
+OS_STK t1[100],t2[100]; // create the stack for task1, Stack must be declared as type OS_STK
+OS_EVENT *sem; //µC/OS-II maintains the state of an ECB in a data structure called
+OS_EVENT
+INT8U err;
+void task1()
+{
+while(1)
+{ OSSemPend(sem,0,&amp;err); //Waiting on a Semaphore (blocking)
+printf(&quot; A &quot;); //Shared resource &quot;Printer&quot;, shows output on serial window
+OSSemPost(sem); //Signaling a Semaphore
+OSTimeDlyHMSM(0,0,0,100); // suspend the task for 100 miliseconds
+}
+}
+void task2()
+{
+while(1)
+{
+OSSemPend(sem,0,&amp;err);//Waiting on a Semaphore (blocking)
+printf(&quot; B &quot;); //Shared resource &quot;Printer&quot;, shows output on serial window
+OSSemPost(sem);//Signaling a Semaphore
+OSTimeDlyHMSM(0,0,0,200); // suspend the task for 200 miliseconds
+}
+}
+int main()
+{ TargetInit();
+init_serial();//Initialize the serial monitor window
+OSInit();//Initialize the OS, return nothing
+sem = OSSemCreate(1);//Binary Semaphore,OSSemCreate() returns a pointer to the ECB,
+//semaphore to access a single shared resource
+OSTaskCreate(task1,NULL,&amp;t1[99],2); //task1 created with priority 2
+OSTaskCreate(task2,NULL,&amp;t2[99],1); //task2 created with priority 1 (Highest Priority)
+OSStart();//start the OS, return nothing
+}
