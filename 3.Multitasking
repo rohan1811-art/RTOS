@@ -1,0 +1,57 @@
+#include &quot;config.h&quot;
+#include &quot;stdlib.h&quot;
+#include &quot;serial.h&quot;
+/*Each task must have its own stack space.
+A stack must be declared as being of type OS_STK and
+must consist of contiguous memory locations.*/
+OS_STK t1[100],t2[100],t3[100]; //Each task has stack entries of this type.
+//The data structure is located in file src/uC/os_cpu.h
+void task1( )
+{
+while(1)//forever run, hardware run
+{
+
+IO0SET = 1&lt;&lt;5; // Turn ON the LED
+OSTimeDlyHMSM(0,0,1,0);
+IO0CLR = 1&lt;&lt;5; // Turn OFF the LED
+OSTimeDlyHMSM(0,0,1,0);//allows a task to delay itself for
+//a user specified amount of seconds and milliseconds.
+}
+}
+void task2( )
+{
+while(1)
+{
+IO0SET = 1&lt;&lt;6;
+OSTimeDlyHMSM(0,0,2,0); //delay of 2sec
+IO0CLR = 1&lt;&lt;6;
+OSTimeDlyHMSM(0,0,2,0);
+}
+}
+void task3 ( )
+{
+while(1)
+{
+
+IO0SET = 1&lt;&lt;7; // LED ON
+OSTimeDlyHMSM(0,0,3,0); //Delay of 3sec
+IO0CLR = 1&lt;&lt;7;// LED OFF
+OSTimeDlyHMSM(0,0,3,0);
+
+}
+}
+int main()
+{ PINSEL0 = 0x00000000; //Configure PORT1 as GPIO
+
+PINSEL1 = 0x00000000;
+IO1DIR = 0xFFFFFFFF ; //Configure P1.16- P1.23 as output for LED
+IO0DIR = 0xFFFFFFFF ;
+TargetInit();
+init_serial();// to check output on serial monitor window
+OSInit();//Call this function first, Initializes uC/OS-II and must be called before calling
+OSStart()
+OSTaskCreate(task1,NULL, &amp;t1[99],1);//Ready state, Stack grows from high to low memory
+OSTaskCreate(task2,NULL, &amp;t2[99],2);//Ready State
+OSTaskCreate(task3,NULL, &amp;t3[99],3);//Ready State
+OSStart();//Start the OS, Running
+}
