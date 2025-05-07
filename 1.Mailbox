@@ -1,0 +1,37 @@
+#include &quot;config.h&quot;
+#include &quot;stdlib.h&quot;
+#include &quot;serial.h&quot;
+OS_STK t1[100],t2[100];
+OS_EVENT *mbox;
+INT8U err,key=&#39;3&#39;;
+void task1()
+{
+while(1)
+{
+err=OSMboxPost(mbox,(void *)key);
+printf(&quot; S &quot;);
+OSTimeDlyHMSM(0,0,0,200);
+}
+}
+void task2()
+{ INT8U *msg;
+while(1)
+{ msg = (INT8U *)(OSMboxPend(mbox, 10, &amp;err));
+if (err == OS_NO_ERR)
+printf(&quot; Y %c &quot;,msg);
+
+else
+printf(&quot; N &quot;);
+OSTimeDlyHMSM(0,0,0,100);
+}
+}
+int main()
+
+{ TargetInit();
+init_serial();
+OSInit();
+mbox = OSMboxCreate(0);
+OSTaskCreate(task1,NULL,&amp;t1[99],1);
+OSTaskCreate(task2,NULL,&amp;t2[99],2);
+OSStart();
+}
